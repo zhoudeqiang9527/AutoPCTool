@@ -80,16 +80,16 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useStorage } from "@vueuse/core";
-import { ref, h, onMounted, onBeforeMount, onUnmounted } from "vue";
+import { ref, h, onMounted, onUnmounted } from "vue";
 import {
   PlayCircleOutlined,
   PauseCircleOutlined,
   CloseOutlined,
 } from "@ant-design/icons-vue";
 import {
+  isRegistered,
   register,
   unregister,
-  unregisterAll,
 } from "@tauri-apps/plugin-global-shortcut";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
@@ -141,22 +141,31 @@ function handleStop() {
   //invoke("stop_scan");
   console.log("stop");
 }
-let unregisterAltQ:any;
-let unregisterAltZ:any;
+
 onMounted(async () => {
-  unregisterAltQ = await register("Alt+Q", (event) => {
+  if (await isRegistered("Alt+Q")) {
+    await unregister("Alt+Q");
+  }
+  if (await isRegistered("Alt+Z")) {
+    await unregister("Alt+Z");
+  }
+
+  await register("Alt+Q", (event) => {
     if (event.state === "Pressed") {
-      handleStop();
+      handleScanLoop();
       getCurrentWindow().hide();
     }
   });
-
-  unregisterAltZ = await register("Alt+Z", (event) => {
+  await register("Alt+Z", (event) => {
     if (event.state === "Pressed") {
-      //handleScanLoop();
+      handleStop();
       getCurrentWindow().show();
     }
   });
+});
+
+onUnmounted(async () => {
+  console.log("unmounted");
 });
 
 function deleteTask(index: number) {
