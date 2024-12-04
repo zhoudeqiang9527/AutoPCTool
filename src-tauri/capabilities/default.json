@@ -10,7 +10,8 @@
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
     "core:window:allow-hide",
-    "core:window:allow-show"
+    "core:window:allow-show",
+    "core:window:allow-close"
     
     
   ]

@@ -59,7 +59,7 @@
         </a-space>
         <template #extra>
           <a-space>
-            <!-- todo 需要添加creen-->
+            <CreateScreenshot size="small" :index="index" />
             <a-button
               size="small"
               :icon="h(CloseOutlined)"
@@ -92,7 +92,7 @@ import {
   unregister,
 } from "@tauri-apps/plugin-global-shortcut";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-
+import CreateScreenshot from "../components/createScreenshot.vue";
 const activeKey = ref("1");
 const startX = useStorage<number[]>("startX", [0]);
 const endX = useStorage<number[]>("endX", [0]);
