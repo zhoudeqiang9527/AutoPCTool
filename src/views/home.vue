@@ -34,26 +34,26 @@
       v-model:activeKey="activeKey"
     >
       <a-collapse-panel
-        :header="`任务${index + 1} X: ${startX[index] + endX[index] / 2} Y: ${
-          y[index]
-        }`"
+        :header="`任务${index} X: ${
+          startX[index - 1] + endX[index - 1] / 2
+        } Y: ${y[index - 1]}`"
         v-for="(index, item) in startX.length"
         :key="index"
       >
         <a-space direction="vertical">
           <a-input-number
             size="small"
-            v-model:value="startX[index]"
+            v-model:value="startX[index - 1]"
             addon-before="起始X"
           />
           <a-input-number
             size="small"
-            v-model:value="endX[index]"
+            v-model:value="endX[index - 1]"
             addon-before="终止X"
           />
           <a-input-number
             size="small"
-            v-model:value="y[index]"
+            v-model:value="y[index - 1]"
             addon-before="高度 Y"
           />
         </a-space>
@@ -63,7 +63,7 @@
             <a-button
               size="small"
               :icon="h(CloseOutlined)"
-              @click="deleteTask(index)"
+              @click="deleteTask(index - 1)"
             ></a-button>
           </a-space>
         </template>
@@ -80,16 +80,20 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useStorage } from "@vueuse/core";
-import { ref, h, onMounted } from "vue";
+import { ref, h, onMounted, onBeforeMount, onUnmounted } from "vue";
 import {
   PlayCircleOutlined,
   PauseCircleOutlined,
   CloseOutlined,
 } from "@ant-design/icons-vue";
-import { register } from "@tauri-apps/plugin-global-shortcut";
+import {
+  register,
+  unregister,
+  unregisterAll,
+} from "@tauri-apps/plugin-global-shortcut";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
-const activeKey = ref("0");
+const activeKey = ref("1");
 const startX = useStorage<number[]>("startX", [0]);
 const endX = useStorage<number[]>("endX", [0]);
 const y = useStorage<number[]>("y", [0]);
@@ -137,19 +141,19 @@ function handleStop() {
   //invoke("stop_scan");
   console.log("stop");
 }
-
+let unregisterAltQ:any;
+let unregisterAltZ:any;
 onMounted(async () => {
-  await register("Alt+Q", (event) => {
+  unregisterAltQ = await register("Alt+Q", (event) => {
     if (event.state === "Pressed") {
-        handleStop();
-         getCurrentWindow().hide();
-      
+      handleStop();
+      getCurrentWindow().hide();
     }
   });
 
-  await register("Alt+Z", (event) => {
+  unregisterAltZ = await register("Alt+Z", (event) => {
     if (event.state === "Pressed") {
-      handleScanLoop();
+      //handleScanLoop();
       getCurrentWindow().show();
     }
   });
