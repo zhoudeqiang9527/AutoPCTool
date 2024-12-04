@@ -15,12 +15,16 @@
       {
         "title": "mytool",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "transparent":true,
+        "skipTaskbar": false
+        
       }
     ],
     "security": {
       "csp": null
     }
+    
   },
   "bundle": {
     "active": true,

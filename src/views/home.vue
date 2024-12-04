@@ -64,100 +64,110 @@
               size="small"
               :icon="h(CloseOutlined)"
               @click="deleteTask(index)"
-              ></a-button
-            >
+            ></a-button>
           </a-space>
         </template>
       </a-collapse-panel>
     </a-collapse>
-    <a-space style="margin-top:12px">
-        <a-button size = "small" @click="addProject">添加任务</a-button>
-        <a-button size = "small" type="primary" @click="reset">reset</a-button>
+    <a-space style="margin-top: 12px">
+      <a-button size="small" @click="addProject">添加任务</a-button>
+      <a-button size="small" type="primary" @click="reset">reset</a-button>
     </a-space>
   </div>
 </template>
 
 <script setup lang="ts">
-import {invoke} from '@tauri-apps/api/core';
-import {listen} from '@tauri-apps/api/event';
-import {useStorage} from '@vueuse/core';
-import {ref,h} from 'vue';
-import {PlayCircleOutlined, PauseCircleOutlined, CloseOutlined} from '@ant-design/icons-vue';
-import {register} from '@tauri-apps/plugin-global-shortcut';
-import {getCurrentWindow } from "@tauri-apps/api/window";
-
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
+import { useStorage } from "@vueuse/core";
+import { ref, h, onMounted } from "vue";
+import {
+  PlayCircleOutlined,
+  PauseCircleOutlined,
+  CloseOutlined,
+} from "@ant-design/icons-vue";
+import { register } from "@tauri-apps/plugin-global-shortcut";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const activeKey = ref("0");
-const startX = useStorage<number[]>('startX', [0]);
-const endX = useStorage<number[]>('endX', [0]);
-const y = useStorage<number[]>('y', [0]);
-const colors = useStorage<[][][]>('colors', [[]]);
-const scanInterval = useStorage<number>('scanInterval', 1000);
+const startX = useStorage<number[]>("startX", [0]);
+const endX = useStorage<number[]>("endX", [0]);
+const y = useStorage<number[]>("y", [0]);
+const colors = useStorage<[][][]>("colors", [[]]);
+const scanInterval = useStorage<number>("scanInterval", 1000);
 
 async function handleScanLoop() {
-    startX.value.forEach((_item, index) => {
-        setTimeout(()=>{
-            const data = {
-                colors: colors.value[index],
-                startX: startX.value[index],
-                endX: endX.value[index],
-                y: y.value[index],
-                interval: scanInterval.value * startX.value.length
-            };
-            //invoke('scan', data);
-        }, index * scanInterval.value);
-    });
+  startX.value.forEach((_item, index) => {
+    setTimeout(() => {
+      const data = {
+        colors: colors.value[index],
+        startX: startX.value[index],
+        endX: endX.value[index],
+        y: y.value[index],
+        interval: scanInterval.value * startX.value.length,
+      };
+      //invoke('scan', data);
+    }, index * scanInterval.value);
+  });
 }
 
-listen<{startX: number; endX: number; y: number;index: number}>(
-    "location",
-    async (event) => {
-        const index = event.payload.index;
-        startX.value[index] = event.payload.startX;
-        endX.value[index] = event.payload.endX;
-        y.value[index] = event.payload.y;
-        colors.value[index] = await invoke('scan_colors', {
-            startX: event.payload.startX,
-            endX: event.payload.endX,
-            y: event.payload.y,
-        });
-    }
-)
+listen<{ startX: number; endX: number; y: number; index: number }>(
+  "location",
+  async (event) => {
+    const index = event.payload.index;
+    startX.value[index] = event.payload.startX;
+    endX.value[index] = event.payload.endX;
+    y.value[index] = event.payload.y;
+    colors.value[index] = await invoke("scan_colors", {
+      startX: event.payload.startX,
+      endX: event.payload.endX,
+      y: event.payload.y,
+    });
+  }
+);
 
 function addProject() {
-    startX.value.push(0);
-    endX.value.push(0);
-    y.value.push(0);
-    colors.value.push([]);
+  startX.value.push(0);
+  endX.value.push(0);
+  y.value.push(0);
+  colors.value.push([]);
 }
 
 function handleStop() {
-    invoke('stop_scan');
+  //invoke("stop_scan");
+  console.log("stop");
 }
 
-register("Alt+Q", () => {
-    handleScanLoop();
-    getCurrentWindow().setSkipTaskbar(true);
-});
+onMounted(async () => {
+  await register("Alt+Q", (event) => {
+    if (event.state === "Pressed") {
+        handleStop();
+         getCurrentWindow().hide();
+      
+    }
+  });
 
-register("Alt+W", () => {
-    handleStop();
-    getCurrentWindow().setSkipTaskbar(false);
+  await register("Alt+Z", (event) => {
+    if (event.state === "Pressed") {
+      handleScanLoop();
+      getCurrentWindow().show();
+    }
+  });
 });
 
 function deleteTask(index: number) {
-    startX.value.splice(index, 1);
-    endX.value.splice(index, 1);
-    y.value.splice(index, 1);
-    colors.value.splice(index, 1);
+  startX.value.splice(index, 1);
+  endX.value.splice(index, 1);
+  y.value.splice(index, 1);
+  colors.value.splice(index, 1);
 }
 
 function reset() {
-    localStorage.clear();
-    window.location.reload();
+  localStorage.clear();
+  window.location.reload();
 }
 </script>
-<style  scoped>
+<style scoped>
 .home {
   min-height: 100vh;
   background-color: #fff;
