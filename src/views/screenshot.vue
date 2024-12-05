@@ -18,9 +18,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useRoute } from "vue-router";
 import { Webview } from '@tauri-apps/api/webview';
 import { emit } from "@tauri-apps/api/event";
-onMounted(async () => {
-  await getCurrentWindow().setDecorations(false);
-});
+
 const index = Number(useRoute().query.index as string);
 const width = ref(0);
 const height = ref(0);
