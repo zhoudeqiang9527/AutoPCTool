@@ -2,7 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": ["main","screenshot"],
   "permissions": [
     "core:default",
     "shell:allow-open",
@@ -16,7 +16,9 @@
     "core:webview:allow-create-webview-window",
     "core:webview:allow-webview-close",
     "core:webview:allow-set-webview-size",
-    "core:window:allow-set-decorations"
+    "core:window:allow-set-decorations",
+    "core:window:allow-get-all-windows",
+    "core:webview:allow-get-all-webviews"
     
     
   ]

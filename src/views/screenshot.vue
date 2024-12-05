@@ -13,10 +13,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useRoute } from "vue-router";
-import { Webview } from '@tauri-apps/api/webview';
+
+import { getAllWebviewWindows } from "@tauri-apps/api/webviewWindow";
 import { emit } from "@tauri-apps/api/event";
 
 const index = Number(useRoute().query.index as string);
@@ -38,16 +39,20 @@ const pickerButtonStyle = computed(() => {
   return {
     top: `${top.value + height.value + 30}px`,
     left: `${left.value + width.value - 80}px`,
-    visibility: isMouseDown.value ? "visible" : "hidden",
+    visibility: isShowButton.value ? "visible" : "hidden",
   };
 });
 // 鼠标左键是否按下
 let isMouseDown = ref(false);
 
+// 是否显示button
+let isShowButton = ref(false);
+
 // 监听鼠标按下事件
 window.addEventListener("mousedown", (e) => {
   // 判断当前按下的位置不是 picker-check 的位置
   // 获取 picker-check 的包围盒
+
   const pickerCheck = document.querySelector(".picker-check");
   const pickerCheckRect = pickerCheck?.getBoundingClientRect();
 
@@ -61,6 +66,8 @@ window.addEventListener("mousedown", (e) => {
     return;
   } else {
     isMouseDown.value = true;
+    isShowButton.value = true;
+    pickerButtonStyle.value.visibility = "visible";
     // 获取鼠标位置
     const { clientX, clientY } = e;
     left.value = clientX;
@@ -84,31 +91,39 @@ window.addEventListener("mousemove", (e) => {
 // 监听鼠标抬起事件
 window.addEventListener("mouseup", () => {
   isMouseDown.value = false;
+  isShowButton.value = true;
 });
 
 async function handleClick() {
   const curentwindow = getCurrentWindow();
-  const allwindows = Webview.getAll();
-  const mainWindow = (await allwindows).find(item=>item.label === "main");
+  console.log("1111111111");
+  const allwindows = await getAllWebviewWindows();
+  console.log("222222");
+  const mainWindow = (await allwindows).find((item) => item.label === "main");
+  console.log("3333");
   const scaleFactor = await curentwindow.scaleFactor();
+  console.log("444");
   const position = await curentwindow.innerPosition();
+  console.log("5555");
   //窗口高度
   const payload = {
     startX: left.value,
     endX: left.value + width.value,
-    y:top.value + height.value/2+Math.round(position.y/scaleFactor),
+    y: top.value + height.value / 2 + Math.round(position.y / scaleFactor),
     index: index,
-  }
-
+  };
+  console.log("6666");
   await emit("location", payload);
-  if(mainWindow){
+  console.log("7777");
+  if (mainWindow) {
     await mainWindow.show();
   }
+  console.log("8888");
   await curentwindow.close();
 }
 </script>
-<style  scoped>
-.screen-wrap{
+<style scoped>
+.screen-wrap {
   width: 100vw;
   height: 100vh;
   position: absolute;
@@ -117,18 +132,19 @@ async function handleClick() {
   z-index: 999;
   box-sizing: border-box;
   position: relative;
-  .screen-picker{
-    position: absolute;
-    z-index: 999;
-    border: solid 2px #0a7baf;
-    box-sizing: content-box;
-    transform: translate(-2px, -2px);
-  }
-  .picker-check{
-    width: 80px;
-    position: absolute;
-    right: 0;
-    bottom: -50px;
-  }
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.picker-check {
+  width: 80px;
+  position: absolute;
+  right: 0;
+  bottom: -50px;
+}
+.screen-picker {
+  position: absolute;
+  z-index: 999;
+  border: solid 2px #0a7baf;
+  box-sizing: content-box;
+  transform: translate(-2px, -2px);
 }
 </style>

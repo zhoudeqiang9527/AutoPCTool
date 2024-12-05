@@ -37,7 +37,7 @@
         :header="`任务${index} X: ${
           startX[index - 1] + endX[index - 1] / 2
         } Y: ${y[index - 1]}`"
-        v-for="(index, item) in startX.length"
+        v-for="(index) in startX.length"
         :key="index"
       >
         <a-space direction="vertical">
@@ -59,7 +59,7 @@
         </a-space>
         <template #extra>
           <a-space>
-            <CreateScreenshot size="small" :index="index" />
+            <CreateScreenshot size="small" :index="index-1" />
             <a-button
               size="small"
               :icon="h(CloseOutlined)"
@@ -110,7 +110,7 @@ async function handleScanLoop() {
         y: y.value[index],
         interval: scanInterval.value * startX.value.length,
       };
-      //invoke('scan', data);
+      invoke("scan_loop", data);
     }, index * scanInterval.value);
   });
 }
@@ -138,7 +138,7 @@ function addProject() {
 }
 
 function handleStop() {
-  //invoke("stop_scan");
+    invoke("stop_scan");
   console.log("stop");
 }
 

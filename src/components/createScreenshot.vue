@@ -18,6 +18,7 @@ async function handleScreenshot() {
     resizable: true,
     skipTaskbar: false,
     transparent: true,
+    maximized: true,   
     
   });
   await getCurrentWindow().hide();
