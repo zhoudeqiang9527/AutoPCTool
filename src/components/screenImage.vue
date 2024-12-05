@@ -43,6 +43,7 @@ watch(
 </script>
 <style  scoped>
 .image {
-  transform: scale(5);
+    transform: scaleY(20);
+    transform-origin: bottom center;
 }
 </style>

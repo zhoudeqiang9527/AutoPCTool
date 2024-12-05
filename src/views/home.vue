@@ -37,29 +37,58 @@
         :header="`任务${index} X: ${
           startX[index - 1] + endX[index - 1] / 2
         } Y: ${y[index - 1]}`"
-        v-for="(index) in startX.length"
+        v-for="index in startX.length"
         :key="index"
       >
-        <a-space direction="vertical">
-          <a-input-number
-            size="small"
-            v-model:value="startX[index - 1]"
-            addon-before="起始X"
-          />
-          <a-input-number
-            size="small"
-            v-model:value="endX[index - 1]"
-            addon-before="终止X"
-          />
-          <a-input-number
-            size="small"
-            v-model:value="y[index - 1]"
-            addon-before="高度 Y"
-          />
-        </a-space>
+        <a-row :gutter="10">
+          <!-- Radio buttons for type selection -->
+          <a-col :span="4">
+            <a-radio-group
+              v-model:value="type[index - 1]"
+              default-value="button"
+              button-style="solid"
+            >
+              <a-radio value="button">按键</a-radio>
+              <a-radio value="text">文本</a-radio>
+            </a-radio-group>
+          </a-col>
+
+          <!-- Image and textarea -->
+          <a-col :span="8">
+            <ScreenImage :colors="colors[index - 1]" width="60%" />
+            <a-textarea
+            v-if="type[index - 1] === 'text'"
+              v-model:value="text_detail[index - 1]"
+              :rows="4"
+              placeholder="输入文本内容"
+            />
+          </a-col>
+
+          <!-- Input numbers for start X, end X, and Y -->
+          <a-col :span="8">
+            <a-space direction="vertical" align="start">
+              <a-input-number
+                size="small"
+                v-model:value="startX[index - 1]"
+                addon-before="起始X"
+              />
+              <a-input-number
+                size="small"
+                v-model:value="endX[index - 1]"
+                addon-before="终止X"
+              />
+              <a-input-number
+                size="small"
+                v-model:value="y[index - 1]"
+                addon-before="高度 Y"
+              />
+            </a-space>
+          </a-col>
+        </a-row>
+
         <template #extra>
           <a-space>
-            <CreateScreenshot size="small" :index="index-1" />
+            <CreateScreenshot size="small" :index="index - 1" />
             <a-button
               size="small"
               :icon="h(CloseOutlined)"
@@ -93,12 +122,18 @@ import {
 } from "@tauri-apps/plugin-global-shortcut";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import CreateScreenshot from "../components/createScreenshot.vue";
+import ScreenImage from "../components/screenImage.vue";
 const activeKey = ref("1");
 const startX = useStorage<number[]>("startX", [0]);
 const endX = useStorage<number[]>("endX", [0]);
 const y = useStorage<number[]>("y", [0]);
 const colors = useStorage<[][][]>("colors", [[]]);
 const scanInterval = useStorage<number>("scanInterval", 1000);
+const type = useStorage<string[]>(
+  "type",
+  new Array(startX.value.length).fill("button")
+);
+const text_detail = useStorage<string[]>("text_detail", [""]);
 
 async function handleScanLoop() {
   startX.value.forEach((_item, index) => {
@@ -110,6 +145,7 @@ async function handleScanLoop() {
         y: y.value[index],
         interval: scanInterval.value * startX.value.length,
       };
+      console.log("data-->", data);
       invoke("scan_loop", data);
     }, index * scanInterval.value);
   });
@@ -138,7 +174,7 @@ function addProject() {
 }
 
 function handleStop() {
-    invoke("stop_scan");
+  invoke("stop_scan");
   console.log("stop");
 }
 

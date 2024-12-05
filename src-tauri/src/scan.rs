@@ -14,6 +14,7 @@ lazy_static! {
 #[tauri::command]
 pub fn scan_once(colors: Vec<[u8; 3]>, start_x: f64, end_x: f64, y: f64) -> bool {
     // 调用 scan_colors 获取屏幕上的颜色
+    println!("scan_once start_x: {}, end_x: {}, y: {}", start_x, end_x, y);
     let screen_colors = scan_colors(start_x, end_x, y);
     // 计算颜色差异
     let mut is_match = true;
@@ -25,8 +26,10 @@ pub fn scan_once(colors: Vec<[u8; 3]>, start_x: f64, end_x: f64, y: f64) -> bool
     }
     // 如果颜色匹配，则点击鼠标左键
     if is_match {
+        println!("match!");
+        let x_point = (start_x + end_x) / 2.0;
         //鼠标移动
-        let _ = mouse::move_to(Point::new(start_x + end_x / 2.0, y));
+        let _ = mouse::move_to(Point::new(x_point, y));
         //鼠标左键点击
         thread::sleep(Duration::from_millis(100));
         let _ = mouse::click(mouse::Button::Left, None);
