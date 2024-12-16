@@ -20,12 +20,20 @@
       </a-button>
     </a-space>
     <a-divider>设置</a-divider>
-    <a-input-number
-      size="small"
-      v-model:value="scanInterval"
-      addon-before="扫描间隔(秒)"
-      addon-after="毫秒"
-    />
+    <a-space>
+      <a-input-number
+        size="small"
+        v-model:value="scanInterval"
+        addon-before="扫描间隔(秒)"
+        addon-after="毫秒"
+      />
+      <a-input-number
+        size="small"
+        v-model:value="totalScanTime"
+        addon-before="总扫描时间(分钟)"
+        addon-after="分钟"
+      />
+    </a-space>
     <a-divider>任务</a-divider>
     <a-collapse
       v-if="startX.length"
@@ -57,7 +65,7 @@
           <a-col :span="8">
             <ScreenImage :colors="colors[index - 1]" width="60%" />
             <a-textarea
-            v-if="type[index - 1] === 'text'"
+              v-if="type[index - 1] === 'text'"
               v-model:value="textDetail[index - 1]"
               :rows="4"
               placeholder="输入文本内容"
@@ -123,12 +131,14 @@ import {
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import CreateScreenshot from "../components/createScreenshot.vue";
 import ScreenImage from "../components/screenImage.vue";
+
 const activeKey = ref("1");
 const startX = useStorage<number[]>("startX", [0]);
 const endX = useStorage<number[]>("endX", [0]);
 const y = useStorage<number[]>("y", [0]);
 const colors = useStorage<[][][]>("colors", [[]]);
 const scanInterval = useStorage<number>("scanInterval", 1000);
+const totalScanTime = useStorage<number>("totalScanTime", 3);
 const type = useStorage<string[]>(
   "type",
   new Array(startX.value.length).fill("button")
@@ -147,10 +157,14 @@ async function handleScanLoop() {
         textDetail: textDetail.value[index],
         interval: scanInterval.value * startX.value.length,
       };
-      console.log("data-->", data);
+      console.log("data-->", index);
       invoke("scan_loop", data);
     }, index * scanInterval.value);
   });
+
+  setTimeout(() => {
+    handleStop();
+  }, totalScanTime.value * 1000 * 60);
 }
 
 listen<{ startX: number; endX: number; y: number; index: number }>(
@@ -211,6 +225,8 @@ function deleteTask(index: number) {
   endX.value.splice(index, 1);
   y.value.splice(index, 1);
   colors.value.splice(index, 1);
+  type.value.splice(index, 1);
+  textDetail.value.splice(index, 1);
 }
 
 function reset() {
