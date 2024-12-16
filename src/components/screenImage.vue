@@ -1,5 +1,5 @@
 <template>
-  <canvas ref="image" class="image"></canvas>
+  <canvas ref="image" class="image" ></canvas>
 </template>
 <script lang="ts" setup>
 import { nextTick, ref, watch } from "vue";
@@ -45,5 +45,6 @@ watch(
 .image {
     transform: scaleY(20);
     transform-origin: bottom center;
+    max-width: 100%;
 }
 </style>

@@ -58,7 +58,7 @@
             <ScreenImage :colors="colors[index - 1]" width="60%" />
             <a-textarea
             v-if="type[index - 1] === 'text'"
-              v-model:value="text_detail[index - 1]"
+              v-model:value="textDetail[index - 1]"
               :rows="4"
               placeholder="输入文本内容"
             />
@@ -133,7 +133,7 @@ const type = useStorage<string[]>(
   "type",
   new Array(startX.value.length).fill("button")
 );
-const text_detail = useStorage<string[]>("text_detail", [""]);
+const textDetail = useStorage<string[]>("textDetail", [""]);
 
 async function handleScanLoop() {
   startX.value.forEach((_item, index) => {
@@ -143,6 +143,8 @@ async function handleScanLoop() {
         startX: startX.value[index],
         endX: endX.value[index],
         y: y.value[index],
+        buttontype: type.value[index],
+        textDetail: textDetail.value[index],
         interval: scanInterval.value * startX.value.length,
       };
       console.log("data-->", data);

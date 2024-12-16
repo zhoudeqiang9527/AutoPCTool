@@ -18,7 +18,8 @@
     "core:webview:allow-set-webview-size",
     "core:window:allow-set-decorations",
     "core:window:allow-get-all-windows",
-    "core:webview:allow-get-all-webviews"
+    "core:webview:allow-get-all-webviews",
+    "global-shortcut:allow-register-all"
     
     
   ]
